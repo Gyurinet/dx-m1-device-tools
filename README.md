@@ -1,0 +1,31 @@
+# dx-m1-device-tools
+
+통합제어기(CM5 기반)에 장착한 DEEPX DX-M1 NPU 모듈(DX-M1BNM5604)의 상태 점검과 성능 측정 스크립트입니다. 통합제어기에서 실행합니다.
+
+| 파일 | 용도 | DX-M1 개발 입문서 |
+|---|---|---|
+| `dx-selftest.sh` | PCIe, 드라이버, 런타임·서비스, 펌웨어·NPU를 점검하고 PASS·WARN·FAIL로 판정 | 3장 |
+| `dx-bench.sh` | 모델별 지연·FPS·자원 사용률 측정, 장시간 안정성 시험 | 6.5절, 10장 |
+
+## 사용법
+
+```sh
+git clone <이 저장소 주소> ~/dx-m1-device-tools
+cd ~/dx-m1-device-tools
+chmod +x dx-selftest.sh dx-bench.sh
+
+./dx-selftest.sh                                   # 상태 점검
+./dx-selftest.sh -m <모델>.dxnn -l 100             # 추론 시험 포함
+./dx-selftest.sh -o selftest-$(date +%Y%m%d).log   # 결과를 파일로도 저장
+
+./dx-bench.sh -t 30 -o ~/bench/gen3 <모델1>.dxnn <모델2>.dxnn   # 모델별 측정
+./dx-bench.sh -S 60 -o ~/bench/stability <모델>.dxnn             # 60분 안정성 시험
+```
+
+`dx-selftest.sh`는 FAIL이 없으면 종료 코드 0, 하나라도 있으면 1을 돌려줍니다.
+
+## 확인한 환경
+
+- 통합제어기: Raspberry Pi Compute Module 5, Debian 13(trixie), 커널 6.18.50+rpt-rpi-2712
+- DEEPX: `dxrt-driver-dkms` 2.6.0-2, `libdxrt-bin`(DX-RT) 3.4.2, 펌웨어 v2.7.4, PCIe Gen3 x1
+- 필요한 명령: `dxrt-cli`, `dxrun`(DX-RT에 포함), `lspci`, `vcgencmd`
