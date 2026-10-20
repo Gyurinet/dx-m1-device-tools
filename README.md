@@ -29,3 +29,7 @@ chmod +x dx-selftest.sh dx-bench.sh
 - 통합제어기: Raspberry Pi Compute Module 5, Debian 13(trixie), 커널 6.18.50+rpt-rpi-2712
 - DEEPX: `dxrt-driver-dkms` 2.6.0-2, `libdxrt-bin`(DX-RT) 3.4.2, 펌웨어 v2.7.4, PCIe Gen3 x1
 - 필요한 명령: `dxrt-cli`, `dxrun`(DX-RT에 포함), `lspci`, `vcgencmd`
+
+## 라이선스
+
+규리넷 주식회사의 독점 라이선스입니다. 제품을 공급받은 고객은 제품의 개발·시험·운영 목적으로 사용·수정할 수 있으며, 서면 허가 없이 제3자에게 배포할 수 없습니다. 자세한 조건은 `LICENSE`를 참고합니다.
