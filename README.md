@@ -10,7 +10,7 @@
 ## 사용법
 
 ```sh
-git clone <이 저장소 주소> ~/dx-m1-device-tools
+git clone https://github.com/Gyurinet/dx-m1-device-tools.git ~/dx-m1-device-tools
 cd ~/dx-m1-device-tools
 chmod +x dx-selftest.sh dx-bench.sh
 
