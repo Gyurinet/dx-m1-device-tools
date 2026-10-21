@@ -5,7 +5,7 @@
 | 파일 | 용도 | DX-M1 개발 입문서 |
 |---|---|---|
 | `dx-selftest.sh` | PCIe, 드라이버, 런타임·서비스, 펌웨어·NPU를 점검하고 PASS·WARN·FAIL로 판정 | 3장 |
-| `dx-bench.sh` | 모델별 지연·FPS·자원 사용률 측정, 장시간 안정성 시험 | 6.5절, 10장 |
+| `dx-bench.sh` | 모델별 지연·FPS·자원 사용률 측정(`-u`: 모델의 CPU 작업 포함), 장시간 안정성 시험 | 10장 |
 
 ## 사용법
 
@@ -18,7 +18,7 @@ chmod +x dx-selftest.sh dx-bench.sh
 ./dx-selftest.sh -m <모델>.dxnn -l 100             # 추론 시험 포함
 ./dx-selftest.sh -o selftest-$(date +%Y%m%d).log   # 결과를 파일로도 저장
 
-./dx-bench.sh -t 30 -o ~/bench/gen3 <모델1>.dxnn <모델2>.dxnn   # 모델별 측정
+./dx-bench.sh -u -t 30 -o ~/bench/gen3 <모델1>.dxnn <모델2>.dxnn   # 모델별 측정(CPU 작업 포함)
 ./dx-bench.sh -S 60 -o ~/bench/stability <모델>.dxnn             # 60분 안정성 시험
 ```
 

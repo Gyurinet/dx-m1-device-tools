@@ -4,23 +4,27 @@
 #  장시간 안정성: 1분 구간을 반복하며 FPS 변동, 실패 횟수, 온도 추이 기록
 #
 # 사용법:
-#   ./dx-bench.sh [-t 초] [-o 결과폴더] model1.dxnn [model2.dxnn ...]
-#   ./dx-bench.sh -S 분 [-o 결과폴더] model.dxnn
+#   ./dx-bench.sh [-u] [-t 초] [-o 결과폴더] model1.dxnn [model2.dxnn ...]
+#   ./dx-bench.sh [-u] -S 분 [-o 결과폴더] model.dxnn
+#   -u: 모델의 CPU 작업(cpu_0 등)까지 실행해 잰다(dxrun --use-ort). 응용 프로그램과 같은 조건이다.
+#       빼면 dxrun 기본값대로 NPU 작업만 잰다.
 set -u
 
 DURATION=30          # 모델별 최대 처리량 측정 시간(초)
 SINGLE_LOOPS=100     # 단일 추론 지연 측정 반복 횟수
 STABILITY_MIN=0      # 0이면 모델별 측정, 1 이상이면 장시간 안정성 측정(분)
 OUT_DIR="dx-bench-$(date +%Y%m%d-%H%M%S)"
+ORT=()               # -u 이면 (--use-ort)
 
 usage() {
-  echo "usage: $0 [-t seconds] [-o outdir] model.dxnn [...]" >&2
-  echo "       $0 -S minutes [-o outdir] model.dxnn" >&2
+  echo "usage: $0 [-u] [-t seconds] [-o outdir] model.dxnn [...]" >&2
+  echo "       $0 [-u] -S minutes [-o outdir] model.dxnn" >&2
   exit 2
 }
 
-while getopts "t:S:o:h" opt; do
+while getopts "ut:S:o:h" opt; do
   case "$opt" in
+    u) ORT=(--use-ort) ;;
     t) DURATION="$OPTARG" ;;
     S) STABILITY_MIN="$OPTARG" ;;
     o) OUT_DIR="$OPTARG" ;;
@@ -93,11 +97,11 @@ run_models() {
     name="$(basename "$m" .dxnn)"
     log1="$OUT_DIR/${name}.single.log"; log2="$OUT_DIR/${name}.bench.log"; smp="$OUT_DIR/${name}.samples.csv"
     echo ">> $name : 단일 추론 ${SINGLE_LOOPS}회"
-    "$DXRUN" -m "$m" -s -l "$SINGLE_LOOPS" -v > "$log1" 2>&1
+    "$DXRUN" -m "$m" -s -l "$SINGLE_LOOPS" -v "${ORT[@]}" > "$log1" 2>&1
     local rc1=$?
     echo ">> $name : 최대 처리량 ${DURATION}초"
     sampler "$smp" 1 & pid=$!
-    "$DXRUN" -m "$m" -t "$DURATION" -v > "$log2" 2>&1
+    "$DXRUN" -m "$m" -t "$DURATION" -v "${ORT[@]}" > "$log2" 2>&1
     local rc2=$?
     kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null
     local res=OK
@@ -119,7 +123,7 @@ run_stability() {
   trap 'kill $pid 2>/dev/null' EXIT
   for i in $(seq 1 "$STABILITY_MIN"); do
     log="$OUT_DIR/${name}.stability.$i.log"
-    if "$DXRUN" -m "$m" -t 60 -v > "$log" 2>&1 && ! grep -q 'dxrt-exception' "$log"; then
+    if "$DXRUN" -m "$m" -t 60 -v "${ORT[@]}" > "$log" 2>&1 && ! grep -q 'dxrt-exception' "$log"; then
       ok=$((ok + 1)); r=OK
     else
       ng=$((ng + 1)); r=FAIL
